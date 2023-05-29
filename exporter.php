@@ -11,6 +11,7 @@ use Google\Service\Drive;
 //$folderPath='C:\laragon\www\ElectionsExporter\testfiles';
 date_default_timezone_set("Europe/Athens");
 $credentialsPath = 'C:\laragon\www\ExportToDrive\electionsexportCredentials.json';
+checklogfile();
 
 
 //"C:\laragon\www\ExportToDrive\electionsexportCredentials.json"
@@ -120,17 +121,24 @@ logMessage("Τερματισμός Script");
 
 function logMessage($message){
 
-    if (!file_exists('log.txt')) {
-        fopen("log.txt","w");
-        //fopen("log.txt","w");
-//        mkdir('log\log.txt', 0777, true);
-//        chmod('log\log.txt',0777);
-    }
 
-    $logPath='log.txt';
+
+    $logPath='./log.txt';
     $timestamp=date('Y-m-d H:i:s');
     $logMessage="[$timestamp] : $message " . PHP_EOL ;
     error_log($logMessage,3,$logPath);
+
+}
+
+
+function checklogfile(){
+
+    if (!file_exists('./log.txt')) {
+        echo "Den ypaxei log";
+        fopen('log.txt', 0777, true);
+
+    }
+    echo "Yparxei";
 
 }
 

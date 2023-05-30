@@ -10,8 +10,8 @@ use Google\Service\Drive;
 
 //$folderPath='C:\laragon\www\ElectionsExporter\testfiles';
 date_default_timezone_set("Europe/Athens");
-$credentialsPath = 'C:\laragon\www\ExportToDrive\electionsexportCredentials.json';
-checklogfile();
+
+
 
 
 //"C:\laragon\www\ExportToDrive\electionsexportCredentials.json"
@@ -22,9 +22,13 @@ checklogfile();
 $client=new Client();
 
 
-$config = parse_ini_file('config.ini', true);
-$folderPath = $config['path']['folder'];
-logMessage("Έλεγχος Αρχείων στον φάκελο " . $folderPath);
+$config= parse_ini_file('config.ini', true);
+$folderPath = $config['path']['foldertoupload'];
+$logpath=$config['path']['logfile'];
+
+$credentialsPath = $config['path']['credentialsfile'];
+$logpath=checklogfile($logpath);
+logMessage("Έλεγχος Αρχείων στον φάκελο " . $folderPath,$logpath);
 //echo "O Fakelos einai " . $folderPath;
 
 
@@ -47,18 +51,18 @@ $files=scandir($folderPath);
 
 
 
-logMessage("Εκκίνηση script");
+logMessage("Εκκίνηση script",$logpath);
 
 $files=array_diff($files,array('.','..'));
 
 if (count($files)  > 0 ){
     $hasfiles=true;
     //echo 'I Have Files';
-    logMessage("Υπάρχουν αρχεία για ανέβασμα");
+    logMessage("Υπάρχουν αρχεία για ανέβασμα",$logpath);
 } else {
     $hasfiles=false;
     //echo ' No Files';
-    logMessage("Δεν υπάρχουν αρχεία για ανέβασμα");
+    logMessage("Δεν υπάρχουν αρχεία για ανέβασμα",$logpath);
 }
 
 
@@ -90,8 +94,8 @@ if ($hasfiles) {
         if ($driveFileid)
         {
 
-            logMessage("Ανέβηκε το αρχείο " . $uploadedFile->name . " με id " .$driveFileid . " στο Drive ");
-            logMessage("Διαγραφή του " . $uploadedFile->name . "απο το" .$filePath);
+            logMessage("Ανέβηκε το αρχείο " . $uploadedFile->name . " με id " .$driveFileid . " στο Drive ",$logpath);
+            logMessage("Διαγραφή του " . $uploadedFile->name . "απο το" .$filePath,$logpath);
             unlink($filePath);
         }
         echo 'Uploaded file ID: ' . $uploadedFile->getId() . '<br>';
@@ -100,18 +104,19 @@ if ($hasfiles) {
 
 }
 
-logMessage("Τερματισμός Script");
+logMessage("Τερματισμός Script",$logpath);
 
-    function deleteDrivefiles($drive, $parentfolder)
+    function deleteDrivefiles($drive, $parentfolder,$logpath)
     {
-        logMessage("Διαγραφή των αρχείων απο το Drive");
+        logMessage("Διαγραφή των αρχείων απο το Drive",$logpath);
+
 
         $files = $drive->files->listFiles([
             'q' => "'" . $parentfolder . "' in parents and trashed=false",
         ]);
 
         foreach ($files->getFiles() as $file) {
-            logMessage("Διαγραγή του ". $file->name . " απο το Drive");
+            logMessage("Διαγραγή του ". $file->name . " απο το Drive",$logpath);
             $drive->files->delete($file->getId());
         }
 
@@ -119,26 +124,26 @@ logMessage("Τερματισμός Script");
 
 
 
-function logMessage($message){
+function logMessage($message,$logpath){
 
-
-
-    $logPath='./log.txt';
+ //   echo $GLOBALS ['logpath'];
+    //$logPath='./log.txt';
     $timestamp=date('Y-m-d H:i:s');
     $logMessage="[$timestamp] : $message " . PHP_EOL ;
-    error_log($logMessage,3,$logPath);
+    echo $logpath;
+    error_log($logMessage,3,$logpath);
 
 }
 
 
-function checklogfile(){
-
-    if (!file_exists('./log.txt')) {
-        echo "Den ypaxei log";
-        fopen('log.txt', 0777, true);
+function checklogfile($logpath){
+    if (!file_exists($logpath.'/log.txt')) {
+        //echo "Den ypaxei log";
+        fopen($logpath.'log.txt', 0777, true);
 
     }
-    echo "Yparxei";
+    return $logpath.'/log.txt';
+   // echo "Yparxei";
 
 }
 
